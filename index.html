@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Pública PNDBio - Geochart</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+    <header>
+        <h1>Consulta Pública PNDBio - Geochart</h1>
+        <p>Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia</p>
+    </header>
+
+    <main class="container">
+        <!-- Espaço 1: Contribuições Acumuladas -->
+        <section class="section-left" id="accumulated-contributions">
+            <h2>Contribuições Acumuladas</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-text">Ao todo, temos <span id="total-contributions" class="highlight">0</span> contribuições à PNDBio</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-text"><span id="unique-contributors" class="highlight">0</span> pessoas contribuíram com o Plano</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-text">Atualmente, a seção <span id="most-commented-section" class="highlight">-</span> é a mais comentada</p>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Contribuições por Seção</h3>
+                    <div id="sectionsChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Tipos de Mudança Propostas</h3>
+                    <div id="changesChart"></div>
+                </div>
+                
+                <div class="chart-container full-width">
+                    <h3>Linha do Tempo das Contribuições</h3>
+                    <div id="timelineChart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Espaço 2: Contribuições da Semana -->
+        <section class="section-right" id="weekly-contributions">
+            <h2>Contribuições da Semana</h2>
+            
+            <div class="stat-card">
+                <p class="stat-text">Na semana passada, <span id="weekly-total" class="highlight">0</span> contribuições foram feitas</p>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Seções (Última Semana)</h3>
+                    <div id="weeklySectionsChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Mudanças (Última Semana)</h3>
+                    <div id="weeklyChangesChart"></div>
+                </div>
+                
+                <div class="chart-container full-width">
+                    <h3>Contribuições por Dia (Última Semana)</h3>
+                    <div id="weeklyTimelineChart"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Dashboard desenvolvido para acompanhamento da Consulta Pública do PNDBio</p>
+    </footer>
+
+    <script src="script_apex.js"></script>
+</body>
+</html>
