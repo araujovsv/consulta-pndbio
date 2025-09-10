@@ -5,74 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta Pública PNDBio - Geochart</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Consulta Pública PNDBio - Geochart</h1>
-        <p>Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia em tempo real</p>
-                <p id="last-updated" style="font-style: italic; color: #7f8c8d; font-size: 0.9rem; margin-top: 0.5rem;">
-            Atualizado em: <span id="update-time"></span>
-        </p>
+    <header class="modern-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <h1 class="gradient-text">Consulta Pública PNDBio</h1>
+            <p class="description">
+                Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia em tempo real
+            </p>
+            <div class="update-info">
+                <i class="fas fa-clock"></i>
+                <span id="last-updated">Atualizado em: <span id="update-time"></span></span>
+            </div>
+        </div>
     </header>
 
     <main class="container">
         <!-- Espaço 1: Contribuições Acumuladas -->
-        <section class="section-left" id="accumulated-contributions">
-            <h2>Contribuições Acumuladas</h2>
+        <section class="section-left modern-card" id="accumulated-contributions">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h2>Contribuições Acumuladas</h2>
+            </div>
             
             <div class="stats-grid">
-                <div class="stat-card">
-                    <p class="stat-text">Ao todo, temos <span id="total-contributions" class="highlight">0</span> contribuições à PNDBio</p>
+                <div class="stat-card modern-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="total-contributions" class="stat-number">0</span>
+                        <p class="stat-label">Contribuições Totais</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <p class="stat-text"><span id="unique-contributors" class="highlight">0</span> pessoas contribuíram com o Plano</p>
+                <div class="stat-card modern-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="unique-contributors" class="stat-number">0</span>
+                        <p class="stat-label">Pessoas Contribuindo</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <p class="stat-text">Atualmente, a seção <span id="most-commented-section" class="highlight">-</span> é a mais comentada</p>
+                <div class="stat-card modern-stat wide">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="most-commented-section" class="stat-highlight">-</span>
+                        <p class="stat-label">Seção Mais Comentada</p>
+                    </div>
                 </div>
             </div>
 
             <div class="charts-grid">
-                <div class="chart-container">
-                    <h3>Contribuições por Seção</h3>
-                    <div id="sectionsChart"></div>
+                <div class="chart-container modern-chart">
+                    <div class="chart-header">
+                        <i class="fas fa-pie-chart"></i>
+                        <h3>Contribuições por Seção</h3>
+                    </div>
+                    <div id="sectionsChart" class="chart-content"></div>
                 </div>
                 
-                <div class="chart-container">
-                    <h3>Tipos de Mudança Propostas</h3>
-                    <div id="changesChart"></div>
+                <div class="chart-container modern-chart">
+                    <div class="chart-header">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Tipos de Mudança Propostas</h3>
+                    </div>
+                    <div id="changesChart" class="chart-content"></div>
                 </div>
                 
-                <div class="chart-container full-width">
-                    <h3>Contribuições ao longo do tempo</h3>
-                    <div id="timelineChart"></div>
+                <div class="chart-container modern-chart full-width">
+                    <div class="chart-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Evolução das Contribuições</h3>
+                    </div>
+                    <div id="timelineChart" class="chart-content"></div>
                 </div>
             </div>
         </section>
 
         <!-- Espaço 2: Contribuições da Semana -->
-        <section class="section-right" id="weekly-contributions">
-            <h2>Contribuições da Semana</h2>
+        <section class="section-right modern-card" id="weekly-contributions">
+            <div class="section-header weekly">
+                <div class="section-icon">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <h2>Contribuições da Semana</h2>
+            </div>
             
-            <div class="stat-card" style="margin-bottom: 3.5rem;">
-                <p class="stat-text">Na semana passada, <span id="weekly-total" class="highlight">0</span> contribuições foram feitas</p>
+            <div class="stats-grid">
+                <div class="stat-card modern-stat weekly-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="weekly-total" class="stat-number">0</span>
+                        <p class="stat-label">Contribuições Esta Semana</p>
+                    </div>
+                </div>
+                <div class="stat-card modern-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="weekly-contributors" class="stat-number">0</span>
+                        <p class="stat-label">Pessoas Contribuindo</p>
+                    </div>
+                </div>
+                <div class="stat-card modern-stat wide">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span id="weekly-most-commented-section" class="stat-highlight">-</span>
+                        <p class="stat-label">Seção Mais Comentada</p>
+                    </div>
+                </div>
             </div>
 
             <div class="charts-grid">
-                <div class="chart-container">
-                    <h3>Contribuições por Seção</h3>
-                    <div id="weeklySectionsChart"></div>
+                <div class="chart-container modern-chart">
+                    <div class="chart-header">
+                        <i class="fas fa-pie-chart"></i>
+                        <h3>Contribuições por Seção</h3>
+                    </div>
+                    <div id="weeklySectionsChart" class="chart-content"></div>
                 </div>
                 
-                <div class="chart-container">
-                    <h3>Tipos de Mundaças Propostas</h3>
-                    <div id="weeklyChangesChart"></div>
+                <div class="chart-container modern-chart">
+                    <div class="chart-header">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Tipos de Mudanças Propostas</h3>
+                    </div>
+                    <div id="weeklyChangesChart" class="chart-content"></div>
                 </div>
                 
-                <div class="chart-container full-width">
-                    <h3>Contribuições ao longo da última semana</h3>
-                    <div id="weeklyTimelineChart"></div>
+                <div class="chart-container modern-chart full-width">
+                    <div class="chart-header">
+                        <i class="fas fa-chart-area"></i>
+                        <h3>Tendência Semanal</h3>
+                    </div>
+                    <div id="weeklyTimelineChart" class="chart-content"></div>
                 </div>
             </div>
         </section>
@@ -80,15 +165,25 @@
 
     <footer>
         <div class="footer-content">
-            <p style="margin-bottom: 1rem;">Dashboard desenvolvido para acompanhamento da Consulta Pública do PNDBio</p>
-            <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">Realizado por:</p>
-            <div class="logos-container">
-                <img src="logos/Geochart - Logo (1).jpg" alt="Geochart" class="footer-logo" onerror="this.style.display='none'">
-                <img src="logos/logo-coalizao.svg" alt="Coalizão" class="footer-logo" onerror="this.style.display='none'">
+            <p style="margin-bottom: 1rem; color: var(--stone-gray);">Realizado por:</p>
+            <div class="logo-container">
+                <div class="logo-item">
+                    <a href="https://araujovsv.github.io/" target="_blank" rel="noopener noreferrer">
+                        <img src="logos/Geochart - Logo (1).jpg" alt="Geochart" onerror="this.style.display='none'">
+                    </a>
+                </div>
+                <div class="logo-item">
+                    <a href="https://coalizaobr.com.br/" target="_blank" rel="noopener noreferrer">
+                        <img src="logos/logo-coalizao.svg" alt="Coalizão" onerror="this.style.display='none'">
+                    </a>
+                </div>
             </div>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--stone-gray);">
+                Todos os direitos reservados à Geochart - Consultoria Ambiental
+            </p>
         </div>
     </footer>
 
-    <script src="script_apex.js"></script>
+    <script src="script_chartjs.js"></script>
 </body>
 </html>
