@@ -10,7 +10,10 @@
 <body>
     <header>
         <h1>Consulta Pública PNDBio - Geochart</h1>
-        <p>Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia</p>
+        <p>Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia em tempo real</p>
+                <p id="last-updated" style="font-style: italic; color: #7f8c8d; font-size: 0.9rem; margin-top: 0.5rem;">
+            Atualizado em: <span id="update-time"></span>
+        </p>
     </header>
 
     <main class="container">
@@ -42,7 +45,7 @@
                 </div>
                 
                 <div class="chart-container full-width">
-                    <h3>Linha do Tempo das Contribuições</h3>
+                    <h3>Contribuições ao longo do tempo</h3>
                     <div id="timelineChart"></div>
                 </div>
             </div>
@@ -52,23 +55,23 @@
         <section class="section-right" id="weekly-contributions">
             <h2>Contribuições da Semana</h2>
             
-            <div class="stat-card">
+            <div class="stat-card" style="margin-bottom: 3.5rem;">
                 <p class="stat-text">Na semana passada, <span id="weekly-total" class="highlight">0</span> contribuições foram feitas</p>
             </div>
 
             <div class="charts-grid">
                 <div class="chart-container">
-                    <h3>Seções (Última Semana)</h3>
+                    <h3>Contribuições por Seção</h3>
                     <div id="weeklySectionsChart"></div>
                 </div>
                 
                 <div class="chart-container">
-                    <h3>Mudanças (Última Semana)</h3>
+                    <h3>Tipos de Mundaças Propostas</h3>
                     <div id="weeklyChangesChart"></div>
                 </div>
                 
                 <div class="chart-container full-width">
-                    <h3>Contribuições por Dia (Última Semana)</h3>
+                    <h3>Contribuições ao longo da última semana</h3>
                     <div id="weeklyTimelineChart"></div>
                 </div>
             </div>
@@ -76,7 +79,14 @@
     </main>
 
     <footer>
-        <p>Dashboard desenvolvido para acompanhamento da Consulta Pública do PNDBio</p>
+        <div class="footer-content">
+            <p style="margin-bottom: 1rem;">Dashboard desenvolvido para acompanhamento da Consulta Pública do PNDBio</p>
+            <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">Realizado por:</p>
+            <div class="logos-container">
+                <img src="logos/Geochart - Logo (1).jpg" alt="Geochart" class="footer-logo" onerror="this.style.display='none'">
+                <img src="logos/logo-coalizao.svg" alt="Coalizão" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+        </div>
     </footer>
 
     <script src="script_apex.js"></script>

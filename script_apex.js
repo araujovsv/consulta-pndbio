@@ -63,6 +63,18 @@ function updateStats() {
         ? mostCommented.substring(0, 30) + '...' 
         : mostCommented;
     document.getElementById('weekly-total').textContent = weeklyData.length;
+    
+    // Atualizar data e hora da última atualização
+    const now = new Date();
+    const dateTime = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    document.getElementById('update-time').textContent = dateTime;
 }
 
 // Função para criar gráfico de donut (pizza) com ApexCharts
@@ -121,27 +133,42 @@ function createDonutChart(containerId, data, field, title) {
             plotOptions: {
                 pie: {
                     donut: {
-                        size: '50%',
+                        size: '65%',
                         labels: {
                             show: true,
                             total: {
                                 show: true,
+                                showAlways: true,
                                 label: 'Total',
-                                fontSize: '16px',
+                                fontSize: '14px',
                                 fontWeight: 'bold',
-                                color: '#2e7d32'
+                                color: '#2e7d32',
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                }
+                            },
+                            value: {
+                                show: false
+                            },
+                            name: {
+                                show: false
                             }
                         }
                     }
                 }
             },
             tooltip: {
-                y: {
-                    formatter: function(value, { seriesIndex, w }) {
-                        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                        const percent = ((value / total) * 100).toFixed(1);
-                        return value + ' (' + percent + '%)';
-                    }
+                enabled: true,
+                custom: function({series, seriesIndex, dataPointIndex, w}) {
+                    const value = series[seriesIndex];
+                    const label = w.globals.labels[seriesIndex];
+                    const total = series.reduce((a, b) => a + b, 0);
+                    const percent = ((value / total) * 100).toFixed(1);
+                    
+                    return `<div style="padding: 8px 12px; background: rgba(0,0,0,0.8); color: white; border-radius: 4px; font-size: 12px;">
+                        <strong>${label}</strong><br/>
+                        ${value} contribuições (${percent}%)
+                    </div>`;
                 }
             },
             responsive: [{
