@@ -1,24 +1,4 @@
-// Dados das contribuições
-const contributionsData = [
-    {data: '08/09/2025 08:22', autor: 'HENRIQUE', id_autor: '1643611', secao: 'Seção 4.1 - Desafio societal', mudanca_proposta: 'Alterar texto'},
-    {data: '06/09/2025 13:01', autor: 'PEDRO', id_autor: '1643485', secao: 'Seção 4.2 - Missões, Metas e Ações', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:17', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'Ação Estratégica 22', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 11:42', autor: 'LEONARDO', id_autor: '1643420', secao: 'Ação Estratégica 6', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:20', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'Ação Estratégica 4', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:23', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'Ação Estratégica 4', mudanca_proposta: 'Inserir texto'},
-    {data: '06/09/2025 12:55', autor: 'PEDRO', id_autor: '1643485', secao: 'CAPÍTULO 2 - GOVERNANÇA', mudanca_proposta: 'Inserir texto'},
-    {data: '06/09/2025 13:02', autor: 'PEDRO', id_autor: '1643485', secao: 'Missão 4 - Aproveitamento', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 11:47', autor: 'LEONARDO', id_autor: '1643420', secao: 'Missão 6 - Produção de biomassa', mudanca_proposta: 'NDA'},
-    {data: '08/09/2025 08:51', autor: 'HENRIQUE', id_autor: '1643611', secao: 'CAPÍTULO 5: FINANCIAMENTO', mudanca_proposta: 'NDA'},
-    {data: '05/09/2025 10:56', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'GLOSSÁRIO PNDBio', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 11:00', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'GLOSSÁRIO PNDBio', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:52', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'GLOSSÁRIO PNDBio', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:54', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'GLOSSÁRIO PNDBio', mudanca_proposta: 'Inserir texto'},
-    {data: '06/09/2025 13:06', autor: 'PEDRO', id_autor: '1643485', secao: 'GLOSSÁRIO PNDBio', mudanca_proposta: 'Inserir texto'},
-    {data: '05/09/2025 10:33', autor: 'Diego Corrêa Furtado', id_autor: '1586737', secao: 'Ação Estratégica 5', mudanca_proposta: 'Alterar texto'},
-    {data: '06/09/2025 13:03', autor: 'PEDRO', id_autor: '1643485', secao: 'Ação Estratégica 4', mudanca_proposta: 'NDA'},
-    {data: '08/09/2025 08:42', autor: 'HENRIQUE', id_autor: '1643611', secao: 'Ação Estratégica 10', mudanca_proposta: 'Inserir texto'}
-];
+// Sistema dinâmico de carregamento de dados do CSV
 
 // Paleta de cores natural e moderna
 const naturalColors = {
@@ -37,66 +17,90 @@ Chart.defaults.font.family = 'Inter, sans-serif';
 Chart.defaults.font.size = 12;
 Chart.defaults.color = '#6b7280';
 
-// Função para obter dados da última semana
-function getWeeklyData() {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    return contributionsData.filter(item => {
-        const [datePart] = item.data.split(' ');
-        const [day, month, year] = datePart.split('/');
-        const itemDate = new Date(year, month - 1, day);
-        return itemDate >= oneWeekAgo;
-    });
+// Função para carregar e processar CSV dinamicamente
+async function loadCSVData() {
+    try {
+        const response = await fetch('database_dashboard.csv');
+        const csvText = await response.text();
+        
+        // Processar CSV
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(';').map(header => header.trim());
+        
+        const data = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(';').map(value => value.trim());
+            const entry = {};
+            
+            headers.forEach((header, index) => {
+                entry[header] = values[index] || '';
+            });
+            
+            data.push(entry);
+        }
+        
+        console.log(`✅ Carregados ${data.length} registros do CSV`);
+        console.log('📊 Campos detectados:', headers);
+        
+        return data;
+    } catch (error) {
+        console.error('❌ Erro ao carregar CSV:', error);
+        return [];
+    }
 }
 
-// Atualizar estatísticas com animação
-function updateStats() {
-    const totalContributions = contributionsData.length;
-    const uniqueContributors = new Set(contributionsData.map(item => item.id_autor)).size;
+// Função para obter dados da semana (começando na terça-feira)
+function getWeeklyData(data) {
+    if (!data || data.length === 0) {
+        console.warn('⚠️ Nenhum dado fornecido para filtro semanal');
+        return [];
+    }
     
-    // Contar seções
-    const sectionCounts = {};
-    contributionsData.forEach(item => {
-        sectionCounts[item.secao] = (sectionCounts[item.secao] || 0) + 1;
+    // Data de referência: terça-feira, 9 de setembro de 2025
+    const referenceDate = new Date(2025, 8, 9); // Mês 8 = setembro (0-indexed)
+    
+    // Encontrar a terça-feira mais recente
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, 2 = terça, etc.
+    
+    let daysToSubtract;
+    if (currentDay >= 2) { // Se hoje é terça ou depois
+        daysToSubtract = currentDay - 2; // Dias desde a terça
+    } else { // Se hoje é domingo ou segunda
+        daysToSubtract = currentDay + 5; // Dias desde a terça passada
+    }
+    
+    const currentTuesday = new Date(today);
+    currentTuesday.setDate(today.getDate() - daysToSubtract);
+    currentTuesday.setHours(0, 0, 0, 0);
+    
+    console.log(`📅 Terça-feira atual: ${currentTuesday.toLocaleDateString('pt-BR')}`);
+    
+    return data.filter(item => {
+        // Detectar campo de data dinamicamente
+        const dateField = item.data || item.Data || item.DATE || item.date || Object.values(item)[0];
+        
+        if (!dateField) return false;
+        
+        try {
+            const [datePart] = dateField.split(' ');
+            const [day, month, year] = datePart.split('/');
+            const itemDate = new Date(year, month - 1, day);
+            
+            return itemDate >= currentTuesday;
+        } catch (error) {
+            console.warn(`⚠️ Erro ao processar data: ${dateField}`);
+            return false;
+        }
     });
-    
-    const mostCommentedSection = Object.keys(sectionCounts).reduce((a, b) => 
-        sectionCounts[a] > sectionCounts[b] ? a : b
-    );
-    
-    const weeklyData = getWeeklyData();
-    const weeklyTotal = weeklyData.length;
-    const weeklyUniqueContributors = new Set(weeklyData.map(item => item.id_autor)).size;
-    
-    // Contar seções semanais
-    const weeklySectionCounts = {};
-    weeklyData.forEach(item => {
-        weeklySectionCounts[item.secao] = (weeklySectionCounts[item.secao] || 0) + 1;
-    });
-    
-    const weeklyMostCommentedSection = Object.keys(weeklySectionCounts).length > 0 ? 
-        Object.keys(weeklySectionCounts).reduce((a, b) => 
-            weeklySectionCounts[a] > weeklySectionCounts[b] ? a : b
-        ) : '-';
-    
-    // Animar os números
-    animateNumber('total-contributions', totalContributions);
-    animateNumber('unique-contributors', uniqueContributors);
-    animateNumber('weekly-total', weeklyTotal);
-    animateNumber('weekly-contributors', weeklyUniqueContributors);
-    
-    document.getElementById('most-commented-section').textContent = mostCommentedSection;
-    document.getElementById('weekly-most-commented-section').textContent = weeklyMostCommentedSection;
-    
-    // Atualizar timestamp
-    const now = new Date();
-    document.getElementById('update-time').textContent = now.toLocaleString('pt-BR');
 }
 
 // Função para animar números
 function animateNumber(elementId, finalValue) {
     const element = document.getElementById(elementId);
+    if (!element) return;
+    
     const duration = 1500;
     const steps = 60;
     const increment = finalValue / steps;
@@ -113,9 +117,18 @@ function animateNumber(elementId, finalValue) {
     }, duration / steps);
 }
 
-// Criar gráfico donut moderno com Chart.js
-function createModernDonutChart(canvasId, data, title) {
+// Criar gráfico donut dinâmico
+function createDynamicDonutChart(canvasId, data, title) {
     const ctx = document.getElementById(canvasId).getContext('2d');
+    
+    if (!data || Object.keys(data).length === 0) {
+        // Se não há dados, mostrar mensagem
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '14px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sem dados disponíveis', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return null;
+    }
     
     // Limitar labels longos
     const labels = Object.keys(data).map(label => {
@@ -242,14 +255,38 @@ function createModernDonutChart(canvasId, data, title) {
     return chart;
 }
 
-// Criar gráfico de linha moderno com Chart.js
-function createModernLineChart(canvasId, data, title) {
+// Criar gráfico de linha dinâmico
+function createDynamicLineChart(canvasId, data, title) {
     const ctx = document.getElementById(canvasId).getContext('2d');
+    
+    if (!data || data.length === 0) {
+        // Se não há dados, mostrar mensagem
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '14px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sem dados disponíveis', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return null;
+    }
+    
+    // Detectar campo de data dinamicamente
+    const dateField = data.length > 0 ? 
+        (data[0].data || data[0].Data || data[0].DATE || data[0].date || Object.keys(data[0])[0]) : null;
+    
+    if (!dateField) {
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '14px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Campo de data não encontrado', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return null;
+    }
     
     // Processar dados para timeline
     const timelineData = {};
     data.forEach(item => {
-        const [datePart] = item.data.split(' ');
+        const dateValue = item[dateField] || item[Object.keys(item)[0]];
+        if (!dateValue) return;
+        
+        const [datePart] = dateValue.split(' ');
         timelineData[datePart] = (timelineData[datePart] || 0) + 1;
     });
     
@@ -265,7 +302,7 @@ function createModernLineChart(canvasId, data, title) {
         return `${day}/${month}`;
     });
     
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -351,6 +388,8 @@ function createModernLineChart(canvasId, data, title) {
             }
         }
     });
+    
+    return chart;
 }
 
 // Adicionar canvas aos containers de gráficos
@@ -371,59 +410,254 @@ function addCanvasToCharts() {
     });
 }
 
-// Inicializar dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Adicionar canvas aos containers
+// Inicializar dashboard com dados dinâmicos
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Inicializando dashboard dinâmico...');
+    
+    // Adicionar canvas aos containers primeiro
     addCanvasToCharts();
     
-    // Aguardar um pouco para os canvas serem criados
-    setTimeout(() => {
-        // Atualizar estatísticas
-        updateStats();
+    console.log('📊 Canvas adicionados, aguardando carregamento...');
+    
+    try {
+        // Carregar dados do CSV
+        const csvData = await loadCSVData();
         
-        // SEÇÃO ACUMULADA
+        if (!csvData || csvData.length === 0) {
+            console.warn('⚠️ Nenhum dado encontrado no CSV');
+            return;
+        }
         
-        // Gráfico de seções (acumulado)
-        const sectionCounts = {};
-        contributionsData.forEach(item => {
-            sectionCounts[item.secao] = (sectionCounts[item.secao] || 0) + 1;
-        });
-        createModernDonutChart('sectionsChartCanvas', sectionCounts, 'Contribuições por Seção');
+        console.log(`✅ ${csvData.length} registros carregados do CSV`);
         
-        // Gráfico de tipos de mudança (acumulado)
-        const changeCounts = {};
-        contributionsData.forEach(item => {
-            changeCounts[item.mudanca_proposta] = (changeCounts[item.mudanca_proposta] || 0) + 1;
-        });
-        createModernDonutChart('changesChartCanvas', changeCounts, 'Tipos de Mudança');
+        // Debug: mostrar primeiros registros
+        console.log('🔍 Primeiros 3 registros:', csvData.slice(0, 3));
+        console.log('🔍 Campos detectados:', Object.keys(csvData[0] || {}));
         
-        // Timeline acumulado
-        createModernLineChart('timelineChartCanvas', contributionsData, 'Evolução das Contribuições');
+        // Calcular estatísticas dinâmicas
+        const stats = calculateStats(csvData);
+        console.log('📊 Estatísticas calculadas:', stats);
         
-        // SEÇÃO SEMANAL
-        const weeklyData = getWeeklyData();
+        // PRIMEIRO: Atualizar cards de estatísticas
+        console.log('🎯 Atualizando cards...');
+        updateStatsCards(csvData);
         
-        // Gráfico de seções (semanal)
-        const weeklySectionCounts = {};
-        weeklyData.forEach(item => {
-            weeklySectionCounts[item.secao] = (weeklySectionCounts[item.secao] || 0) + 1;
-        });
-        createModernDonutChart('weeklySectionsChartCanvas', weeklySectionCounts, 'Seções (Semanal)');
+        // SEGUNDO: Aguardar um pouco para os cards serem atualizados
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Gráfico de tipos de mudança (semanal)
-        const weeklyChangeCounts = {};
-        weeklyData.forEach(item => {
-            weeklyChangeCounts[item.mudanca_proposta] = (weeklyChangeCounts[item.mudanca_proposta] || 0) + 1;
-        });
-        createModernDonutChart('weeklyChangesChartCanvas', weeklyChangeCounts, 'Mudanças (Semanal)');
+        // TERCEIRO: Processar dados para gráficos dinâmicos
+        console.log('📈 Processando dados para gráficos...');
+        const authorData = processAuthorData(csvData);
+        const sectionData = processSectionData(csvData);
+        const weeklyData = getWeeklyData(csvData);
         
-        // Timeline semanal
-        createModernLineChart('weeklyTimelineChartCanvas', weeklyData, 'Tendência Semanal');
+        console.log('👥 Dados por autor:', authorData);
+        console.log('📝 Dados por seção:', sectionData);
+        console.log('📅 Dados semanais:', weeklyData.length, 'contribuições');
         
-        // Adicionar efeitos de hover nos cards
+        // QUARTO: Criar gráficos dinâmicos
+        console.log('🎨 Criando gráficos...');
+        createDynamicDonutChart('sectionsChartCanvas', sectionData, 'Contribuições por Seção');
+        createDynamicDonutChart('changesChartCanvas', authorData, 'Contribuições por Autor');
+        createDynamicLineChart('timelineChartCanvas', csvData, 'Evolução das Contribuições');
+        
+        // SEÇÃO SEMANAL - usando dados filtrados
+        const weeklySectionData = processSectionData(weeklyData);
+        const weeklyAuthorData = processAuthorData(weeklyData);
+        
+        createDynamicDonutChart('weeklySectionsChartCanvas', weeklySectionData, 'Seções (Semanal)');
+        createDynamicDonutChart('weeklyChangesChartCanvas', weeklyAuthorData, 'Autores (Semanal)');
+        createDynamicLineChart('weeklyTimelineChartCanvas', weeklyData, 'Tendência Semanal');
+        
+        // QUINTO: Adicionar efeitos de hover nos cards
         addHoverEffects();
-    }, 100);
+        
+        // SEXTO: Atualizar timestamp
+        updateLastUpdate();
+        
+        console.log('✨ Dashboard dinâmico inicializado com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados do CSV:', error);
+        
+        // Fallback: mostrar mensagem de erro
+        const containers = document.querySelectorAll('.chart-container canvas');
+        containers.forEach(canvas => {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Erro ao carregar dados', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('Verifique o arquivo CSV', canvas.width / 2, canvas.height / 2 + 20);
+        });
+    }
 });
+
+// Calcular estatísticas gerais dos dados
+function calculateStats(data) {
+    const stats = {
+        total: data.length,
+        thisWeek: 0,
+        authors: new Set(),
+        sections: new Set()
+    };
+    
+    const weeklyData = getWeeklyData(data);
+    stats.thisWeek = weeklyData.length;
+    
+    // Contar autores únicos
+    data.forEach(item => {
+        const author = item[Object.keys(item).find(key => 
+            key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
+        )];
+        if (author) stats.authors.add(author);
+        
+        const section = item[Object.keys(item).find(key => 
+            key.toLowerCase().includes('seção') || 
+            key.toLowerCase().includes('secao') || 
+            key.toLowerCase().includes('section')
+        )];
+        if (section) stats.sections.add(section);
+    });
+    
+    return {
+        total: stats.total,
+        thisWeek: stats.thisWeek,
+        authors: stats.authors.size,
+        sections: stats.sections.size
+    };
+}
+
+// Atualizar cards de estatísticas com dados reais
+function updateStatsCards(data) {
+    console.log('🔧 Iniciando updateStatsCards com', data.length, 'registros');
+    
+    const stats = calculateStats(data);
+    console.log('📊 Stats calculadas em updateStatsCards:', stats);
+    
+    // Verificar se os elementos existem
+    const elements = {
+        totalElement: document.getElementById('total-contributions'),
+        contributorsElement: document.getElementById('unique-contributors'),
+        weeklyTotalElement: document.getElementById('weekly-total'),
+        weeklyContributorsElement: document.getElementById('weekly-contributors'),
+        mostCommentedElement: document.getElementById('most-commented-section'),
+        weeklyMostCommentedElement: document.getElementById('weekly-most-commented-section')
+    };
+    
+    Object.entries(elements).forEach(([name, element]) => {
+        console.log(`🔍 Elemento ${name}:`, element ? 'ENCONTRADO' : 'NÃO ENCONTRADO');
+    });
+    
+    // Atualizar elementos por ID
+    if (elements.totalElement) {
+        console.log('📈 Atualizando total-contributions para:', stats.total);
+        animateNumber('total-contributions', stats.total);
+    }
+    if (elements.contributorsElement) {
+        console.log('📈 Atualizando unique-contributors para:', stats.authors);
+        animateNumber('unique-contributors', stats.authors);
+    }
+    if (elements.weeklyTotalElement) {
+        console.log('📈 Atualizando weekly-total para:', stats.thisWeek);
+        animateNumber('weekly-total', stats.thisWeek);
+    }
+    if (elements.weeklyContributorsElement) {
+        // Para dados semanais, calcular autores únicos da semana
+        const weeklyData = getWeeklyData(data);
+        const weeklyAuthors = new Set();
+        weeklyData.forEach(item => {
+            const author = item[Object.keys(item).find(key => 
+                key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
+            )];
+            if (author) weeklyAuthors.add(author);
+        });
+        console.log('📈 Atualizando weekly-contributors para:', weeklyAuthors.size);
+        animateNumber('weekly-contributors', weeklyAuthors.size);
+    }
+    
+    // Atualizar seção mais comentada (total)
+    if (elements.mostCommentedElement) {
+        const sectionData = processSectionData(data);
+        console.log('📊 Dados de seções:', sectionData);
+        const mostCommented = Object.keys(sectionData).length > 0 ? 
+            Object.keys(sectionData).reduce((a, b) => 
+                sectionData[a] > sectionData[b] ? a : b
+            ) : 'Nenhuma seção';
+        
+        // Limitar texto longo
+        const displayText = mostCommented.length > 30 ? 
+            mostCommented.substring(0, 27) + '...' : mostCommented;
+        console.log('📈 Atualizando most-commented-section para:', displayText);
+        elements.mostCommentedElement.textContent = displayText;
+    }
+    
+    // Atualizar seção mais comentada (semanal)
+    if (elements.weeklyMostCommentedElement) {
+        const weeklyData = getWeeklyData(data);
+        const weeklySectionData = processSectionData(weeklyData);
+        console.log('📊 Dados de seções semanais:', weeklySectionData);
+        const weeklyMostCommented = Object.keys(weeklySectionData).length > 0 ? 
+            Object.keys(weeklySectionData).reduce((a, b) => 
+                weeklySectionData[a] > weeklySectionData[b] ? a : b
+            ) : 'Nenhuma seção';
+        
+        // Limitar texto longo
+        const displayText = weeklyMostCommented.length > 30 ? 
+            weeklyMostCommented.substring(0, 27) + '...' : weeklyMostCommented;
+        console.log('📈 Atualizando weekly-most-commented-section para:', displayText);
+        elements.weeklyMostCommentedElement.textContent = displayText;
+    }
+    
+    console.log('✅ Cards atualizados com sucesso!');
+}
+
+// Processar dados por autor dinamicamente
+function processAuthorData(data) {
+    const authorStats = {};
+    
+    data.forEach(item => {
+        const author = item[Object.keys(item).find(key => 
+            key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
+        )] || 'Autor não identificado';
+        
+        authorStats[author] = (authorStats[author] || 0) + 1;
+    });
+    
+    return authorStats;
+}
+
+// Processar dados por seção dinamicamente
+function processSectionData(data) {
+    const sectionStats = {};
+    
+    data.forEach(item => {
+        const section = item[Object.keys(item).find(key => 
+            key.toLowerCase().includes('seção') || 
+            key.toLowerCase().includes('secao') || 
+            key.toLowerCase().includes('section') ||
+            key.toLowerCase().includes('categoria') ||
+            key.toLowerCase().includes('category')
+        )] || 'Seção não identificada';
+        
+        sectionStats[section] = (sectionStats[section] || 0) + 1;
+    });
+    
+    return sectionStats;
+}
+
+// Atualizar timestamp da última atualização
+function updateLastUpdate() {
+    const now = new Date();
+    const timestamp = now.toLocaleString('pt-BR');
+    
+    const updateElement = document.getElementById('update-time');
+    if (updateElement) {
+        updateElement.textContent = timestamp;
+    }
+    
+    console.log(`🕐 Última atualização: ${timestamp}`);
+}
 
 // Adicionar efeitos de hover modernos
 function addHoverEffects() {
