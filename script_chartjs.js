@@ -458,15 +458,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // QUARTO: Criar gráficos dinâmicos
         console.log('🎨 Criando gráficos...');
         createDynamicDonutChart('sectionsChartCanvas', sectionData, 'Contribuições por Seção');
-        createDynamicDonutChart('changesChartCanvas', authorData, 'Contribuições por Autor');
+        createDynamicDonutChart('changesChartCanvas', processChangeData(csvData), 'Tipos de Mudança Proposta');
         createDynamicLineChart('timelineChartCanvas', csvData, 'Evolução das Contribuições');
         
         // SEÇÃO SEMANAL - usando dados filtrados
         const weeklySectionData = processSectionData(weeklyData);
-        const weeklyAuthorData = processAuthorData(weeklyData);
+        const weeklyChangeData = processChangeData(weeklyData);
         
         createDynamicDonutChart('weeklySectionsChartCanvas', weeklySectionData, 'Seções (Semanal)');
-        createDynamicDonutChart('weeklyChangesChartCanvas', weeklyAuthorData, 'Autores (Semanal)');
+        createDynamicDonutChart('weeklyChangesChartCanvas', weeklyChangeData, 'Tipos de Mudança (Semanal)');
         createDynamicLineChart('weeklyTimelineChartCanvas', weeklyData, 'Tendência Semanal');
         
         // QUINTO: Adicionar efeitos de hover nos cards
@@ -625,6 +625,18 @@ function processAuthorData(data) {
     });
     
     return authorStats;
+}
+
+// Processar dados por tipo de mudança dinamicamente
+function processChangeData(data) {
+    const changeStats = {};
+    
+    data.forEach(item => {
+        const change = item.mudanca_proposta || item['mudança_proposta'] || item.mudanca || 'Tipo não identificado';
+        changeStats[change] = (changeStats[change] || 0) + 1;
+    });
+    
+    return changeStats;
 }
 
 // Processar dados por seção dinamicamente
