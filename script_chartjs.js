@@ -50,32 +50,35 @@ async function loadCSVData() {
     }
 }
 
-// Função para obter dados da semana (começando na terça-feira)
+// Função para obter dados da semana (vira na quarta-feira)
 function getWeeklyData(data) {
     if (!data || data.length === 0) {
         console.warn('⚠️ Nenhum dado fornecido para filtro semanal');
         return [];
     }
     
-    // Data de referência: terça-feira, 9 de setembro de 2025
-    const referenceDate = new Date(2025, 8, 9); // Mês 8 = setembro (0-indexed)
-    
-    // Encontrar a terça-feira mais recente
+    // Encontrar a quarta-feira mais recente (semana vira na quarta)
     const today = new Date();
-    const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, 2 = terça, etc.
+    const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, 2 = terça, 3 = quarta, etc.
     
     let daysToSubtract;
-    if (currentDay >= 2) { // Se hoje é terça ou depois
-        daysToSubtract = currentDay - 2; // Dias desde a terça
-    } else { // Se hoje é domingo ou segunda
-        daysToSubtract = currentDay + 5; // Dias desde a terça passada
+    if (currentDay >= 3) { // Se hoje é quarta ou depois
+        daysToSubtract = currentDay - 3; // Dias desde a quarta
+    } else { // Se hoje é domingo, segunda ou terça
+        daysToSubtract = currentDay + 4; // Dias desde a quarta passada (7 - 3 + currentDay)
     }
     
-    const currentTuesday = new Date(today);
-    currentTuesday.setDate(today.getDate() - daysToSubtract);
-    currentTuesday.setHours(0, 0, 0, 0);
+    const currentWednesday = new Date(today);
+    currentWednesday.setDate(today.getDate() - daysToSubtract);
+    currentWednesday.setHours(0, 0, 0, 0);
     
-    console.log(`📅 Terça-feira atual: ${currentTuesday.toLocaleDateString('pt-BR')}`);
+    // Como hoje é segunda (16/09), a quarta passada foi 11/09
+    // Mas queremos contar desde terça passada (10/09) até hoje
+    const startDate = new Date(currentWednesday);
+    startDate.setDate(currentWednesday.getDate() - 1); // Terça anterior
+    
+    console.log(`📅 Semana atual: desde ${startDate.toLocaleDateString('pt-BR')} até hoje`);
+    console.log(`📅 Próxima virada será na quarta (${currentWednesday.toLocaleDateString('pt-BR')})`);
     
     return data.filter(item => {
         // Detectar campo de data dinamicamente
@@ -88,7 +91,7 @@ function getWeeklyData(data) {
             const [day, month, year] = datePart.split('/');
             const itemDate = new Date(year, month - 1, day);
             
-            return itemDate >= currentTuesday;
+            return itemDate >= startDate;
         } catch (error) {
             console.warn(`⚠️ Erro ao processar data: ${dateField}`);
             return false;
@@ -505,12 +508,10 @@ function calculateStats(data) {
     const weeklyData = getWeeklyData(data);
     stats.thisWeek = weeklyData.length;
     
-    // Contar autores únicos
+    // Contar autores únicos por ID
     data.forEach(item => {
-        const author = item[Object.keys(item).find(key => 
-            key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
-        )];
-        if (author) stats.authors.add(author);
+        const authorId = item.id_autor || item.ID_AUTOR;
+        if (authorId) stats.authors.add(authorId);
         
         const section = item[Object.keys(item).find(key => 
             key.toLowerCase().includes('seção') || 
@@ -563,14 +564,12 @@ function updateStatsCards(data) {
         animateNumber('weekly-total', stats.thisWeek);
     }
     if (elements.weeklyContributorsElement) {
-        // Para dados semanais, calcular autores únicos da semana
+        // Para dados semanais, calcular autores únicos da semana por ID
         const weeklyData = getWeeklyData(data);
         const weeklyAuthors = new Set();
         weeklyData.forEach(item => {
-            const author = item[Object.keys(item).find(key => 
-                key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
-            )];
-            if (author) weeklyAuthors.add(author);
+            const authorId = item.id_autor || item.ID_AUTOR;
+            if (authorId) weeklyAuthors.add(authorId);
         });
         console.log('📈 Atualizando weekly-contributors para:', weeklyAuthors.size);
         animateNumber('weekly-contributors', weeklyAuthors.size);
@@ -612,16 +611,17 @@ function updateStatsCards(data) {
     console.log('✅ Cards atualizados com sucesso!');
 }
 
-// Processar dados por autor dinamicamente
+// Processar dados por autor dinamicamente (usando id_autor)
 function processAuthorData(data) {
     const authorStats = {};
     
     data.forEach(item => {
-        const author = item[Object.keys(item).find(key => 
-            key.toLowerCase().includes('autor') || key.toLowerCase().includes('author')
-        )] || 'Autor não identificado';
+        // Usar id_autor em vez de nome do autor para evitar duplicatas
+        const authorId = item.id_autor || item.ID_AUTOR || 'ID não identificado';
+        const authorName = item.autor || item.AUTOR || `Autor ${authorId}`;
         
-        authorStats[author] = (authorStats[author] || 0) + 1;
+        // Usar o nome do autor como chave, mas garantir unicidade pelo ID
+        authorStats[authorName] = (authorStats[authorName] || 0) + 1;
     });
     
     return authorStats;
