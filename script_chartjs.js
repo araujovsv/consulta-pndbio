@@ -668,7 +668,35 @@ function updateLastUpdate() {
         updateElement.textContent = timestamp;
     }
     
+    // Atualizar contagem regressiva da consulta
+    updateConsultationDeadline();
+    
     console.log(`🕐 Última atualização: ${timestamp}`);
+}
+
+// Calcular e atualizar prazo da consulta pública
+function updateConsultationDeadline() {
+    const deadlineDate = new Date(2025, 9, 5); // 5 de outubro de 2025 (mês 9 = outubro, 0-indexed)
+    const today = new Date();
+    
+    // Calcular diferença em milissegundos
+    const timeDifference = deadlineDate.getTime() - today.getTime();
+    
+    // Calcular dias restantes
+    const daysRemaining = Math.ceil(timeDifference / (1000 * 3600 * 24));
+    
+    const deadlineElement = document.getElementById('deadline-countdown');
+    if (deadlineElement) {
+        if (daysRemaining > 0) {
+            deadlineElement.textContent = `Faltam ${daysRemaining} dias para o término da Consulta Pública`;
+        } else if (daysRemaining === 0) {
+            deadlineElement.textContent = 'Último dia da Consulta Pública!';
+        } else {
+            deadlineElement.textContent = 'Consulta Pública encerrada';
+        }
+    }
+    
+    console.log(`⏰ Dias restantes para consulta: ${daysRemaining}`);
 }
 
 // Adicionar efeitos de hover modernos

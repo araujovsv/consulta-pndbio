@@ -128,6 +128,32 @@ body {
     color: var(--success-green);
 }
 
+/* Prazo da consulta */
+.consultation-deadline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--primary-green);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: rgba(45, 80, 22, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(45, 80, 22, 0.1);
+}
+
+.consultation-deadline i {
+    color: var(--accent-gold);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
 /* Container principal */
 .container {
     max-width: 1800px;
@@ -299,6 +325,16 @@ body {
     font-weight: 500;
     color: var(--stone-gray);
     margin: 0;
+}
+
+/* Nota explicativa para cards */
+.stat-note {
+    font-size: 0.8rem;
+    color: var(--stone-gray);
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
+    opacity: 0.8;
+    line-height: 1.3;
 }
 
 /* Weekly highlight */
