@@ -613,3 +613,94 @@ footer {
     border-radius: 8px !important;
     box-shadow: var(--card-shadow) !important;
 }
+
+/* Footer do Dashboard */
+.dashboard-footer {
+    background: white;
+    padding: 3rem 0 2rem;
+    margin-top: 4rem;
+    box-shadow: 0 -4px 20px rgba(45, 80, 22, 0.1);
+    border-top: 1px solid rgba(45, 80, 22, 0.1);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.footer-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer-logos {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-logo-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+    filter: drop-shadow(0 4px 8px rgba(45, 80, 22, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.footer-logo-image:hover {
+    transform: scale(1.02);
+}
+
+.footer-credits {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.copyright {
+    font-size: 0.9rem;
+    color: var(--stone-gray);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.maintenance {
+    font-size: 0.8rem;
+    color: var(--stone-gray);
+    opacity: 0.8;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Responsividade do footer */
+@media (max-width: 768px) {
+    .dashboard-footer {
+        padding: 2rem 0 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .footer-content {
+        padding: 0 1rem;
+    }
+    
+    .footer-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .footer-logo-image {
+        max-height: 80px;
+    }
+    
+    .footer-credits {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+    }
+}
