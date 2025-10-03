@@ -20,19 +20,59 @@ Chart.defaults.color = '#6b7280';
 // Função para carregar e processar CSV dinamicamente
 async function loadCSVData() {
     try {
-        const response = await fetch('database_dashboard.csv');
+        // Adicionar timestamp para evitar cache
+        const timestamp = new Date().getTime();
+        const response = await fetch(`database_dashboard.csv?v=${timestamp}`, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
         const csvText = await response.text();
         
-        // Processar CSV
-        const lines = csvText.trim().split('\n');
+        // Processar CSV - normalizar quebras de linha
+        const normalizedText = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const lines = normalizedText.trim().split('\n');
         const headers = lines[0].split(';').map(header => header.trim());
         
+        console.log(`📄 Total de linhas no arquivo: ${lines.length} (incluindo cabeçalho)`);
+        console.log(`📊 Cabeçalhos: ${headers.length} colunas`);
+        
         const data = [];
+        let skippedLines = 0;
         
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(';').map(value => value.trim());
-            const entry = {};
+            const line = lines[i];
             
+            // Pular linhas vazias
+            if (!line.trim()) {
+                skippedLines++;
+                console.warn(`⚠️ Linha ${i + 1} está vazia, pulando...`);
+                continue;
+            }
+            
+            const values = line.split(';').map(value => value.trim());
+            
+            // Verificar se tem pelo menos as colunas essenciais (data)
+            if (values.length < 1 || !values[0].trim()) {
+                skippedLines++;
+                console.warn(`⚠️ Linha ${i + 1} não tem data válida. Pulando...`);
+                continue;
+            }
+            
+            // Se tem menos colunas que esperado, preencher com vazios
+            while (values.length < headers.length) {
+                values.push('');
+            }
+            
+            // Se tem mais colunas, truncar (mas avisar)
+            if (values.length > headers.length) {
+                console.warn(`⚠️ Linha ${i + 1} tem ${values.length} colunas, esperado ${headers.length}. Truncando...`);
+                values.length = headers.length;
+            }
+            
+            const entry = {};
             headers.forEach((header, index) => {
                 entry[header] = values[index] || '';
             });
@@ -40,8 +80,10 @@ async function loadCSVData() {
             data.push(entry);
         }
         
-        console.log(`✅ Carregados ${data.length} registros do CSV`);
+        console.log(`✅ Carregados ${data.length} registros válidos do CSV`);
+        console.log(`⚠️ ${skippedLines} linhas foram ignoradas (vazias ou malformadas)`);
         console.log('📊 Campos detectados:', headers);
+        console.log(`🔄 Arquivo carregado em: ${new Date().toLocaleTimeString('pt-BR')}`);
         
         return data;
     } catch (error) {
@@ -57,28 +99,14 @@ function getWeeklyData(data) {
         return [];
     }
     
-    // Encontrar a quarta-feira mais recente (semana vira na quarta)
-    const today = new Date();
-    const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, 2 = terça, 3 = quarta, etc.
+    // Período específico: 01/10/2025 até hoje
+    const startDate = new Date(2025, 9, 1); // 01/10/2025 (mês 9 = outubro, 0-indexed)
+    const today = new Date(); // Data atual
+    startDate.setHours(0, 0, 0, 0);
+    today.setHours(23, 59, 59, 999);
     
-    let daysToSubtract;
-    if (currentDay >= 3) { // Se hoje é quarta ou depois
-        daysToSubtract = currentDay - 3; // Dias desde a quarta
-    } else { // Se hoje é domingo, segunda ou terça
-        daysToSubtract = currentDay + 4; // Dias desde a quarta passada (7 - 3 + currentDay)
-    }
-    
-    const currentWednesday = new Date(today);
-    currentWednesday.setDate(today.getDate() - daysToSubtract);
-    currentWednesday.setHours(0, 0, 0, 0);
-    
-    // Como hoje é segunda (16/09), a quarta passada foi 11/09
-    // Mas queremos contar desde terça passada (10/09) até hoje
-    const startDate = new Date(currentWednesday);
-    startDate.setDate(currentWednesday.getDate() - 1); // Terça anterior
-    
-    console.log(`📅 Semana atual: desde ${startDate.toLocaleDateString('pt-BR')} até hoje`);
-    console.log(`📅 Próxima virada será na quarta (${currentWednesday.toLocaleDateString('pt-BR')})`);
+    console.log(`📅 Período semanal: ${startDate.toLocaleDateString('pt-BR')} até ${today.toLocaleDateString('pt-BR')}`);
+    console.log(`📅 Contabilizando contribuições desde 01 de outubro/2025`);
     
     return data.filter(item => {
         // Detectar campo de data dinamicamente
@@ -88,12 +116,25 @@ function getWeeklyData(data) {
         
         try {
             const [datePart] = dateField.split(' ');
-            const [day, month, year] = datePart.split('/');
+            
+            // Validar formato da data
+            if (!datePart || !datePart.includes('/')) {
+                console.warn(`⚠️ Data mal formatada ignorada na função semanal: ${dateField}`);
+                return false;
+            }
+            
+            const dateParts = datePart.split('/');
+            if (dateParts.length !== 3 || !dateParts[0] || !dateParts[1] || !dateParts[2]) {
+                console.warn(`⚠️ Data incompleta ignorada na função semanal: ${datePart}`);
+                return false;
+            }
+            
+            const [day, month, year] = dateParts;
             const itemDate = new Date(year, month - 1, day);
             
-            return itemDate >= startDate;
+            return itemDate >= startDate && itemDate <= today;
         } catch (error) {
-            console.warn(`⚠️ Erro ao processar data: ${dateField}`);
+            console.warn(`⚠️ Erro ao processar data: ${dateField}`, error);
             return false;
         }
     });
@@ -283,26 +324,77 @@ function createDynamicLineChart(canvasId, data, title) {
         return null;
     }
     
-    // Processar dados para timeline
+    // Processar dados para timeline (apenas datas até hoje)
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Final do dia
     const timelineData = {};
+    
     data.forEach(item => {
         const dateValue = item[dateField] || item[Object.keys(item)[0]];
         if (!dateValue) return;
         
         const [datePart] = dateValue.split(' ');
-        timelineData[datePart] = (timelineData[datePart] || 0) + 1;
+        
+        // Validar se a data está no formato correto (dd/mm/yyyy)
+        if (!datePart || !datePart.includes('/')) {
+            console.warn(`⚠️ Data mal formatada ignorada: ${dateValue}`);
+            return;
+        }
+        
+        const dateParts = datePart.split('/');
+        if (dateParts.length !== 3 || !dateParts[0] || !dateParts[1] || !dateParts[2]) {
+            console.warn(`⚠️ Data incompleta ignorada: ${datePart}`);
+            return;
+        }
+        
+        try {
+            // Verificar se a data não é futura nem muito antiga
+            const [day, month, year] = dateParts;
+            const itemDate = new Date(year, month - 1, day);
+            const minDate = new Date(2025, 8, 1); // 01/09/2025 como data mínima
+            
+            if (itemDate > today) {
+                console.warn(`⚠️ Data futura ignorada: ${datePart}`);
+                return;
+            }
+            
+            if (itemDate < minDate) {
+                console.warn(`⚠️ Data muito antiga ignorada: ${datePart}`);
+                return;
+            }
+            
+            timelineData[datePart] = (timelineData[datePart] || 0) + 1;
+        } catch (error) {
+            console.warn(`⚠️ Erro ao validar data: ${datePart}`, error);
+            return;
+        }
     });
     
+    console.log(`📊 Timeline: ${Object.keys(timelineData).length} datas processadas para o gráfico de linha`);
+    
     const sortedDates = Object.keys(timelineData).sort((a, b) => {
-        const [dayA, monthA, yearA] = a.split('/');
-        const [dayB, monthB, yearB] = b.split('/');
-        return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+        try {
+            const [dayA, monthA, yearA] = a.split('/');
+            const [dayB, monthB, yearB] = b.split('/');
+            return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+        } catch (error) {
+            console.warn(`⚠️ Erro ao ordenar datas: ${a}, ${b}`);
+            return 0;
+        }
     });
     
     const values = sortedDates.map(date => timelineData[date]);
     const labels = sortedDates.map(date => {
-        const [day, month] = date.split('/');
-        return `${day}/${month}`;
+        try {
+            const dateParts = date.split('/');
+            if (dateParts.length >= 2 && dateParts[0] && dateParts[1]) {
+                return `${dateParts[0]}/${dateParts[1]}`;
+            }
+            return date; // Fallback para data original se houver problema
+        } catch (error) {
+            console.warn(`⚠️ Erro ao formatar label: ${date}`);
+            return date;
+        }
     });
     
     const chart = new Chart(ctx, {
