@@ -3,183 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta Pública PNDBio</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Dashboard - Consulta Pública PNDBio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles-consolidated.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body>
+    <!-- Header -->
     <header class="modern-header">
         <div class="header-content">
             <div class="header-icon">
                 <i class="fas fa-leaf"></i>
             </div>
-            <h1 class="gradient-text">Consulta Pública PNDBio</h1>
+            <h1 class="gradient-text">Consulta Pública do PNDBio</h1>
             <p class="description">
-                Acompanhe as contribuições para o Plano Nacional de Desenvolvimento da Bioeconomia em tempo real
+                Resultados consolidados da Consulta Pública do Plano Nacional de Desenvolvimento da Bioeconomia
             </p>
-            <div class="consultation-deadline">
-                <i class="fas fa-hourglass-half"></i>
-                <span id="deadline-countdown">Calculando prazo...</span>
-            </div>
-            <div class="update-info">
-                <i class="fas fa-clock"></i>
-                <span id="last-updated">Atualizado em: <span id="update-time"></span></span>
-            </div>
+            <p>Realizada entre 04/09/2025 a 04/10/2025</p>
         </div>
     </header>
 
-    <main class="container">
-        <!-- Espaço 1: Contribuições Acumuladas -->
-        <section class="section-left modern-card" id="accumulated-contributions">
-            <div class="section-header">
-                <div class="section-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <h2>Contribuições Acumuladas</h2>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card modern-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-comments"></i>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Stats Cards -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalContributions">---</div>
+                            <div class="stat-label">Contribuições Recebidas</div>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <span id="total-contributions" class="stat-number">0</span>
-                        <p class="stat-label">Contribuições Totais</p>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalContributors">---</div>
+                            <div class="stat-label">Pessoas Contribuíram</div>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card modern-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span id="unique-contributors" class="stat-number">0</span>
-                        <p class="stat-label">Pessoas Contribuindo</p>
-                    </div>
-                </div>
-                <div class="stat-card modern-stat wide">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span id="most-commented-section" class="stat-highlight">-</span>
-                        <p class="stat-label">Seção Mais Comentada</p>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalInstitutions">---</div>
+                            <div class="stat-label">Instituições Participaram</div>
+                        </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- Timeline Chart -->
+            <section class="chart-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2><i class="fas fa-chart-line"></i> Evolução das Contribuições</h2>
+                        <p>Distribuição diária de contribuições durante o período de consulta</p>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Full Width Charts Section -->
+            <div class="full-width-section">
+                    <!-- Institution Chart -->
+                    <section class="chart-section">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2><i class="fas fa-chart-bar"></i> Contribuições por Instituição</h2>
+                                <p>Instituições que contribuíram com a consulta pública</p>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="institutionChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Word Cloud -->
+                    <section class="chart-section">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2><i class="fas fa-cloud"></i> Nuvem de Palavras</h2>
+                                <p>Termos mais frequentes nas contribuições</p>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="wordCloud" width="1300" height="300"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Top Contributors -->
+                    <section class="list-section">
+                        <div class="list-container">
+                            <div class="list-header">
+                                <h2><i class="fas fa-trophy"></i> Maiores Contribuidores</h2>
+                                <p>A lista de pessoas que mais contribuiram para o Plano e a quantidade de contribuições</p>
+                            </div>
+                            <div class="list-content" id="topContributors">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
             </div>
 
-            <div class="charts-grid">
-                <div class="chart-container modern-chart">
-                    <div class="chart-header">
-                        <i class="fas fa-pie-chart"></i>
-                        <h3>Contribuições por Seção</h3>
-                    </div>
-                    <div id="sectionsChart" class="chart-content"></div>
-                </div>
-                
-                <div class="chart-container modern-chart">
-                    <div class="chart-header">
-                        <i class="fas fa-cogs"></i>
-                        <h3>Tipos de Mudança Propostas</h3>
-                    </div>
-                    <div id="changesChart" class="chart-content"></div>
-                </div>
-                
-                <div class="chart-container modern-chart full-width">
-                    <div class="chart-header">
-                        <i class="fas fa-chart-line"></i>
-                        <h3>Evolução das Contribuições</h3>
-                    </div>
-                    <div id="timelineChart" class="chart-content"></div>
-                </div>
-            </div>
-        </section>
+            <!-- Analysis Grid Section -->
+            <div class="analysis-grid-section">
+                <!-- First Row: Chapters and Sections -->
+                <div class="analysis-row">
+                    <section class="analysis-section">
+                        <div class="analysis-container">
+                            <div class="analysis-header">
+                                <h3><i class="fas fa-book"></i> Capítulos Mais Comentados</h3>
+                            </div>
+                            <div class="analysis-content" id="topChapters">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Espaço 2: Contribuições da Semana -->
-        <section class="section-right modern-card" id="weekly-contributions">
-            <div class="section-header weekly">
-                <div class="section-icon">
-                    <i class="fas fa-calendar-week"></i>
+                    <section class="analysis-section">
+                        <div class="analysis-container">
+                            <div class="analysis-header">
+                                <h3><i class="fas fa-list"></i> Seções Mais Comentadas</h3>
+                            </div>
+                            <div class="analysis-content" id="topSections">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                <h2>Contribuições da Semana</h2>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card modern-stat weekly-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-fire"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span id="weekly-total" class="stat-number">0</span>
-                        <p class="stat-label">Contribuições Esta Semana</p>
-                        <p class="stat-note" style="color: aliceblue;">A contagem será atualizada toda quarta-feira</p>
-                    </div>
-                </div>
-                <div class="stat-card modern-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span id="weekly-contributors" class="stat-number">0</span>
-                        <p class="stat-label">Pessoas Contribuindo</p>
-                    </div>
-                </div>
-                <div class="stat-card modern-stat wide">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span id="weekly-most-commented-section" class="stat-highlight">-</span>
-                        <p class="stat-label">Seção Mais Comentada</p>
-                    </div>
-                </div>
-            </div>
 
-            <div class="charts-grid">
-                <div class="chart-container modern-chart">
-                    <div class="chart-header">
-                        <i class="fas fa-pie-chart"></i>
-                        <h3>Contribuições por Seção</h3>
-                    </div>
-                    <div id="weeklySectionsChart" class="chart-content"></div>
+                <!-- Second Row: Missions and Goals -->
+                <div class="analysis-row">
+                    <section class="analysis-section">
+                        <div class="analysis-container">
+                            <div class="analysis-header">
+                                <h3><i class="fas fa-list"></i> Missões Mais Comentadas</h3>
+                            </div>
+                            <div class="analysis-content" id="topMissions">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="analysis-section">
+                        <div class="analysis-container">
+                            <div class="analysis-header">
+                                <h3><i class="fas fa-bullseye"></i> Metas Mais Comentadas</h3>
+                            </div>
+                            <div class="analysis-content" id="topGoals">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                
-                <div class="chart-container modern-chart">
-                    <div class="chart-header">
-                        <i class="fas fa-cogs"></i>
-                        <h3>Tipos de Mudanças Propostas</h3>
-                    </div>
-                    <div id="weeklyChangesChart" class="chart-content"></div>
-                </div>
-                
-                <div class="chart-container modern-chart full-width">
-                    <div class="chart-header">
-                        <i class="fas fa-chart-area"></i>
-                        <h3>Tendência Semanal</h3>
-                    </div>
-                    <div id="weeklyTimelineChart" class="chart-content"></div>
+
+                <!-- Third Row: Actions (Full Width) -->
+                <div class="analysis-row-full">
+                    <section class="analysis-section">
+                        <div class="analysis-container">
+                            <div class="analysis-header">
+                                <h3><i class="fas fa-cogs"></i> Ações Estratégicas Mais Comentadas</h3>
+                            </div>
+                            <div class="analysis-content" id="topActions">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <footer class="dashboard-footer">
-        <div class="footer-content">
-            <div class="footer-logos">
-                <img src="logos/regua_logos.png" alt="Logos das organizações realizadoras" class="footer-logo-image">
-            </div>
-            <div class="footer-credits">
-                <p class="copyright">Todos os direitos reservados</p>
-                <p class="maintenance">Manutenção feita por Geochart - Consultoria Ambiental</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logos">
+                    <img src="logos/regua_logos.png" alt="Logos das Instituições" class="footer-logo">
+                </div>
+                <div class="footer-text">
+                    <p>&copy; Todos os Direitos Reservados</p>
+                    <p>Manutenção do Site realizada por: Geochart - Consultoria Ambiental</p>
+                </div>
             </div>
         </div>
     </footer>
 
-    <script src="script_chartjs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+    <script>
+        // Debug: Verificar se Chart.js está carregado
+        window.addEventListener('load', function() {
+            console.log('🔍 Verificando dependências...');
+            console.log('Chart.js disponível:', typeof Chart !== 'undefined');
+            console.log('WordCloud disponível:', typeof WordCloud !== 'undefined');
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js versão:', Chart.version || 'Versão não disponível');
+            }
+        });
+    </script>
+    <script src="script-consolidated.js"></script>
 </body>
 </html>
