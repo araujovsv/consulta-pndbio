@@ -395,6 +395,14 @@ body {
     line-height: 1.4;
 }
 
+.action-mission {
+    font-size: 0.75rem;
+    color: var(--text-medium);
+    font-style: italic;
+    margin-top: 0.25rem;
+    opacity: 0.8;
+}
+
 .analysis-count {
     background: transparent;
     color: var(--text-medium);

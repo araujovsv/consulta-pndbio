@@ -292,7 +292,17 @@ function processContentAnalysis(data) {
             action.trim().toUpperCase() !== 'NÃO IDENTIFICADO' &&
             action.trim().toUpperCase() !== 'NAO IDENTIFICADO' &&
             action.trim().toUpperCase() !== 'NDA') {
-            analysis.actions[action.trim()] = (analysis.actions[action.trim()] || 0) + 1;
+            const actionKey = action.trim();
+            if (!analysis.actions[actionKey]) {
+                analysis.actions[actionKey] = {
+                    count: 0,
+                    mission: mission && mission.trim() && 
+                            mission.trim().toUpperCase() !== 'NÃO IDENTIFICADO' &&
+                            mission.trim().toUpperCase() !== 'NAO IDENTIFICADO' &&
+                            mission.trim().toUpperCase() !== 'NDA' ? mission.trim() : 'Missão não identificada'
+                };
+            }
+            analysis.actions[actionKey].count += 1;
         }
     });
     
@@ -304,12 +314,16 @@ function processContentAnalysis(data) {
     const getAllSorted = (obj) => Object.entries(obj)
         .sort((a, b) => b[1] - a[1]);
     
+    const getAllSortedActions = (obj) => Object.entries(obj)
+        .map(([action, data]) => [action, data.count, data.mission])
+        .sort((a, b) => b[1] - a[1]);
+    
     return {
         chapters: getTop5(analysis.chapters),
         sections: getAllSorted(analysis.sections), // Todas as seções
         missions: getTop5(analysis.missions),
         goals: getAllSorted(analysis.goals), // Todas as metas
-        actions: getAllSorted(analysis.actions) // Todas as ações
+        actions: getAllSortedActions(analysis.actions) // Todas as ações com missões
     };
 }
 
@@ -492,13 +506,29 @@ function renderAnalysisSection(containerId, data, title, showInitial = 5) {
     const itemsToShow = showingAll ? data : data.slice(0, showInitial);
     
     function renderItems() {
-        const itemsHtml = itemsToShow.map((item, index) => `
-            <div class="analysis-item">
-                <div class="analysis-rank">${index + 1}</div>
-                <div class="analysis-text">${item[0]}</div>
-                <div class="analysis-count">${item[1]}</div>
-            </div>
-        `).join('');
+        const itemsHtml = itemsToShow.map((item, index) => {
+            // Para ações estratégicas, incluir a missão
+            if (containerId === 'topActions' && item[2]) {
+                return `
+                    <div class="analysis-item">
+                        <div class="analysis-rank">${index + 1}</div>
+                        <div class="analysis-text">
+                            ${item[0]}
+                            <div class="action-mission">Missão: ${item[2]}</div>
+                        </div>
+                        <div class="analysis-count">${item[1]}</div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="analysis-item">
+                        <div class="analysis-rank">${index + 1}</div>
+                        <div class="analysis-text">${item[0]}</div>
+                        <div class="analysis-count">${item[1]}</div>
+                    </div>
+                `;
+            }
+        }).join('');
         
         const buttonHtml = data.length > showInitial ? `
             <div class="show-more-container">
@@ -541,7 +571,6 @@ function updateTopContributors(contributors) {
             <div class="contributor-rank">${index + 1}</div>
             <div class="contributor-info">
                 <div class="contributor-name">${contributor[0]}</div>
-                <div class="contributor-count">Seção mais ativa: ${contributor[2]}</div>
             </div>
             <div class="contributor-badge">${contributor[1]}</div>
         </div>
